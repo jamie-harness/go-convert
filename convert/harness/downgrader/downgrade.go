@@ -414,13 +414,16 @@ func (d *Downgrader) convertStepGroup(src *v1.Step, depth int) []*v0.Steps {
 		return nil // Reached maximum depth. Stop recursion to prevent stack overflow
 	}
 	spec_ := src.Spec.(*v1.StepGroup)
-
+	fmt.Println("Within convertStepgroup")
 	var steps []*v0.Steps
 	for _, step := range spec_.Steps {
 		// If this step is a step group, recursively convert it
+
 		if _, ok := step.Spec.(*v1.StepGroup); ok {
+			fmt.Println("When stepgroup found")
 			steps = append(steps, d.convertStepGroup(step, depth+1)...)
 		} else {
+			fmt.Println("When stepgroup not found")
 			// Else, convert the step
 			dst := d.convertStep(step)
 			steps = append(steps, &v0.Steps{Step: dst.Step})
