@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+    stages {
+        stage("readfile") {
+            steps {
+                script {
+                    def filePath = 'file.txt'
+                    def sha1 = sh(
+                        script: "shasum ${filePath} | awk '{ print \$1 }'",
+                        returnStdout: true
+                    ).trim()
+                    echo "SHA-1 checksum: ${sha1}"
+                }
+            }
+        }
+    }
+}

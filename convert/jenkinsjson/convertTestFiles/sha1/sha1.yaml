@@ -1,0 +1,9 @@
+- step:
+    identifier: sh5153a9
+    name: sh
+    spec:
+      command: shasum file.txt | awk '{ print $1 }'
+      shell: Sh
+    timeout: ""
+    type: Run
+timeout: ""

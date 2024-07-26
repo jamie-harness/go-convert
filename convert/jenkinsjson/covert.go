@@ -373,6 +373,8 @@ func collectStepsWithID(currentNode jenkinsjson.Node, stepWithIDList *[]StepWith
 		*stepWithIDList = append(*stepWithIDList, StepWithID{Step: jenkinsjson.ConvertReadFile(currentNode, variables), ID: id})
 	case "readJSON":
 		*stepWithIDList = append(*stepWithIDList, StepWithID{Step: jenkinsjson.ConvertReadJson(currentNode, variables), ID: id})
+	case "sha1":
+		*stepWithIDList = append(*stepWithIDList, StepWithID{Step: jenkinsjson.ConvertSHA1(currentNode, variables), ID: id})
 	case "readYaml":
 		*stepWithIDList = append(*stepWithIDList, StepWithID{Step: jenkinsjson.ConvertReadYaml(currentNode, variables), ID: id})
 	case "readCSV":
