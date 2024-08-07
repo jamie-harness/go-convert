@@ -20,29 +20,31 @@ import (
 )
 
 type (
-	Step struct { // TODO missing failure strategies
-		ID          string            `json:"identifier,omitempty"        yaml:"identifier,omitempty"`
-		Description string            `json:"description,omitempty"       yaml:"description,omitempty"`
-		Name        string            `json:"name,omitempty"              yaml:"name,omitempty"`
-		Skip        string            `json:"skipCondition,omitempty"     yaml:"skipCondition,omitempty"`
-		Spec        interface{}       `json:"spec,omitempty"              yaml:"spec,omitempty"`
-		Timeout     Duration          `json:"timeout,omitempty"           yaml:"timeout,omitempty"`
-		Type        string            `json:"type,omitempty"              yaml:"type,omitempty"`
-		When        *StepWhen         `json:"when,omitempty"              yaml:"when,omitempty"`
-		Env         map[string]string `json:"envVariables,omitempty"      yaml:"envVariables,omitempty"`
-		Strategy    *Strategy         `json:"strategy,omitempty"     yaml:"strategy,omitempty"`
+	Step struct {
+		ID              string            `json:"identifier,omitempty"        yaml:"identifier,omitempty"`
+		Description     string            `json:"description,omitempty"       yaml:"description,omitempty"`
+		Name            string            `json:"name,omitempty"              yaml:"name,omitempty"`
+		Skip            string            `json:"skipCondition,omitempty"     yaml:"skipCondition,omitempty"`
+		Spec            interface{}       `json:"spec,omitempty"              yaml:"spec,omitempty"`
+		Timeout         Duration          `json:"timeout,omitempty"           yaml:"timeout,omitempty"`
+		Type            string            `json:"type,omitempty"              yaml:"type,omitempty"`
+		When            *StepWhen         `json:"when,omitempty"              yaml:"when,omitempty"`
+		Env             map[string]string `json:"envVariables,omitempty"      yaml:"envVariables,omitempty"`
+		Strategy        *Strategy         `json:"strategy,omitempty"     yaml:"strategy,omitempty"`
+		FailureStrategy *FailureStrategy  `json:"failureStrategies,omitempty"     yaml:"failureStrategies,omitempty"`
 	}
 
-	StepGroup struct { // TODO missing failure strategies
-		ID          string            `json:"identifier,omitempty"        yaml:"identifier,omitempty"`
-		Description string            `json:"description,omitempty"       yaml:"description,omitempty"`
-		Name        string            `json:"name,omitempty"              yaml:"name,omitempty"`
-		Skip        string            `json:"skipCondition,omitempty"     yaml:"skipCondition,omitempty"`
-		Steps       []*Steps          `json:"steps,omitempty"              yaml:"steps,omitempty"`
-		Timeout     Duration          `json:"timeout,omitempty"           yaml:"timeout,omitempty"`
-		When        *StepWhen         `json:"when,omitempty"              yaml:"when,omitempty"`
-		Env         map[string]string `json:"envVariables,omitempty"      yaml:"envVariables,omitempty"`
-		Strategy    *Strategy         `json:"strategy,omitempty"     yaml:"strategy,omitempty"`
+	StepGroup struct {
+		ID              string            `json:"identifier,omitempty"        yaml:"identifier,omitempty"`
+		Description     string            `json:"description,omitempty"       yaml:"description,omitempty"`
+		Name            string            `json:"name,omitempty"              yaml:"name,omitempty"`
+		Skip            string            `json:"skipCondition,omitempty"     yaml:"skipCondition,omitempty"`
+		Steps           []*Steps          `json:"steps,omitempty"              yaml:"steps,omitempty"`
+		Timeout         Duration          `json:"timeout,omitempty"           yaml:"timeout,omitempty"`
+		When            *StepWhen         `json:"when,omitempty"              yaml:"when,omitempty"`
+		Env             map[string]string `json:"envVariables,omitempty"      yaml:"envVariables,omitempty"`
+		Strategy        *Strategy         `json:"strategy,omitempty"     yaml:"strategy,omitempty"`
+		FailureStrategy *FailureStrategy  `json:"failureStrategies,omitempty"     yaml:"failureStrategies,omitempty"`
 	}
 
 	//
@@ -181,7 +183,7 @@ type (
 		ConnRef         string            `json:"connectorRef,omitempty"    yaml:"connectorRef,omitempty"`
 		Image           string            `json:"image,omitempty"           yaml:"image,omitempty"`
 		ImagePullPolicy string            `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
-		Outputs         []*Output          `json:"outputVariables,omitempty" yaml:"outputVariables,omitempty"`
+		Outputs         []*Output         `json:"outputVariables,omitempty" yaml:"outputVariables,omitempty"`
 		Privileged      bool              `json:"privileged,omitempty"      yaml:"privileged,omitempty"`
 		Resources       *Resources        `json:"resources,omitempty"       yaml:"resources,omitempty"`
 		RunAsUser       string            `json:"runAsUser,omitempty"       yaml:"runAsUser,omitempty"`
@@ -266,6 +268,70 @@ type (
 	StepWhen struct {
 		StageStatus string `json:"stageStatus,omitempty" yaml:"stageStatus,omitempty"`
 		Condition   string `json:"condition,omitempty" yaml:"condition,omitempty"`
+	}
+
+	FailureStrategy struct {
+		OnFailure []*OnFailures `json:"onFailure,omitempty"     yaml:"onFailure,omitempty"`
+	}
+
+	OnFailures struct {
+		Errors []string `json:"errors,omitempty"     yaml:"errors,omitempty"`
+		Action *Action  `json:"action,omitempty"     yaml:"action,omitempty"`
+	}
+
+	Action struct {
+		FailureType string      `json:"type,omitempty"              yaml:"type,omitempty"`
+		Spec        interface{} `json:"spec,omitempty"              yaml:"spec,omitempty"`
+	}
+
+	FailureSpecRetry struct {
+		RetryCount     int         `json:"retryCount,omitempty"              yaml:"retryCount,omitempty"`
+		OnRetryFailure interface{} `json:"onRetryFailure,omitempty"              yaml:"onRetryFailure,omitempty"`
+		RetryInterval  []string    `json:"retryInterval,omitempty"              yaml:"retryInterval,omitempty"`
+	}
+
+	OnRetryFailure struct {
+		Action *Action `json:"action,omitempty"     yaml:"action,omitempty"`
+	}
+
+	FailureSpecManualIntervention struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecIgnore struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecMarkAsSuccess struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecMarkAsFailure struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecAbort struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecStageRollback struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecStepGroupRollback struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecPipelineRollback struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecProceedWithDefaultValues struct {
+		// TODO: Don't know if its possible in Jenkins
+	}
+
+	FailureSpecRetryStepGroup struct {
+		// TODO: Don't know if its possible in Jenkins
 	}
 )
 

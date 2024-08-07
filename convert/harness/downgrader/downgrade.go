@@ -16,6 +16,7 @@ package downgrader
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"sort"
@@ -409,10 +410,11 @@ func (d *Downgrader) convertStepGroup(src *v1.Step) *v0.StepGroup {
 		steps = append(steps, dst)
 	}
 	return &v0.StepGroup{
-		ID:      src.Id,
-		Name:    convertName(src.Name),
-		Timeout: convertTimeout(src.Timeout),
-		Steps:   steps,
+		ID:              src.Id,
+		Name:            convertName(src.Name),
+		Timeout:         convertTimeout(src.Timeout),
+		Steps:           steps,
+		FailureStrategy: ConvertFailureStrategyRetry(src.Failure),
 	}
 }
 
@@ -468,8 +470,9 @@ func (d *Downgrader) convertStepRun(src *v1.Step) *v0.Step {
 			Reports:         convertReports(spec_.Reports),
 			Shell:           strings.Title(spec_.Shell),
 		},
-		When:     convertStepWhen(src.When, id),
-		Strategy: convertStrategy(src.Strategy),
+		When:            convertStepWhen(src.When, id),
+		Strategy:        convertStrategy(src.Strategy),
+		FailureStrategy: ConvertFailureStrategyRetry(src.Failure),
 	}
 }
 
@@ -902,7 +905,7 @@ func convertStepWhen(when *v1.When, stepId string) *v0.StepWhen {
 
 func convertOutput(output string) *v0.Output {
 	return &v0.Output{
-		Name:  output,
+		Name: output,
 	}
 }
 
@@ -1011,4 +1014,50 @@ func convertStageWhen(when *v1.When, stepId string) *v0.StageWhen {
 	}
 
 	return newWhen
+}
+
+func ConvertFailureStrategyRetry(failureList *v1.FailureList) *v0.FailureStrategy {
+	if failureList == nil || len(failureList.Items) == 0 {
+		return nil
+	}
+
+	var count int
+	for _, failure := range failureList.Items {
+		if failureJSON, err := json.MarshalIndent(failure, "", "  "); err == nil {
+			fmt.Println("Failure Item:", string(failureJSON))
+		} else {
+			fmt.Println("Error marshaling failure item:", err)
+		}
+		if failure.Action != nil && failure.Action.Type == "Retry" {
+			fmt.Printf("Found Retry")
+			if spec, ok := failure.Action.Spec.(map[string]interface{}); ok {
+				if retryCount, exists := spec["retryCount"].(int); exists {
+					fmt.Printf("Inside count logic")
+					count = retryCount
+					break
+				}
+			}
+		}
+	}
+
+	fmt.Println(count)
+	newFailureStrategyRetry := &v0.FailureStrategy{
+		OnFailure: []*v0.OnFailures{
+			{
+				Errors: []string{"AllErrors"},
+				Action: &v0.Action{
+					FailureType: "Retry",
+					Spec: &v0.FailureSpecRetry{
+						RetryCount: count - 1,
+						OnRetryFailure: v0.Action{
+							FailureType: "MarkAsFailure",
+						},
+						RetryInterval: []string{"5s"},
+					},
+				},
+			},
+		},
+	}
+
+	return newFailureStrategyRetry
 }
