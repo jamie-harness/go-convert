@@ -414,7 +414,7 @@ func (d *Downgrader) convertStepGroup(src *v1.Step) *v0.StepGroup {
 		Name:            convertName(src.Name),
 		Timeout:         convertTimeout(src.Timeout),
 		Steps:           steps,
-		FailureStrategy: ConvertFailureStrategyRetry(src.Failure),
+		FailureStrategy: []*v0.FailureStrategy{ConvertFailureStrategyRetry(src.Failure)},
 	}
 }
 
@@ -470,9 +470,8 @@ func (d *Downgrader) convertStepRun(src *v1.Step) *v0.Step {
 			Reports:         convertReports(spec_.Reports),
 			Shell:           strings.Title(spec_.Shell),
 		},
-		When:            convertStepWhen(src.When, id),
-		Strategy:        convertStrategy(src.Strategy),
-		FailureStrategy: ConvertFailureStrategyRetry(src.Failure),
+		When:     convertStepWhen(src.When, id),
+		Strategy: convertStrategy(src.Strategy),
 	}
 }
 
@@ -1040,20 +1039,17 @@ func ConvertFailureStrategyRetry(failureList *v1.FailureList) *v0.FailureStrateg
 		}
 	}
 
-	fmt.Println(count)
 	newFailureStrategyRetry := &v0.FailureStrategy{
-		OnFailure: []*v0.OnFailures{
-			{
-				Errors: []string{"AllErrors"},
-				Action: &v0.Action{
-					FailureType: "Retry",
-					Spec: &v0.FailureSpecRetry{
-						RetryCount: count - 1,
-						OnRetryFailure: v0.Action{
-							FailureType: "MarkAsFailure",
-						},
-						RetryInterval: []string{"5s"},
+		OnFailure: &v0.OnFailures{
+			Errors: []string{"AllErrors"},
+			Action: &v0.Action{
+				FailureType: "Retry",
+				Spec: &v0.FailureSpecRetry{
+					RetryCount: count - 1,
+					OnRetryFailure: v0.Action{
+						FailureType: "MarkAsFailure",
 					},
+					RetryInterval: []string{"5s"},
 				},
 			},
 		},

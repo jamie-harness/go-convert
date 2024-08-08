@@ -489,30 +489,30 @@ func collectStepsWithID(currentNode jenkinsjson.Node, stepWithIDList *[]StepWith
 		}
 
 		if failureStrategy != nil {
-			parallelStepItemsWithID := make([]StepWithID, 0)
+			StepGroupItemsWithID := make([]StepWithID, 0)
 			for _, child := range currentNode.Children {
-				clone, repo = collectStepsWithID(child, &parallelStepItemsWithID, processedTools, variables, timeout, failureStrategies)
+				clone, repo = collectStepsWithID(child, &StepGroupItemsWithID, processedTools, variables, timeout, failureStrategies)
 			}
 
-			sort.Slice(parallelStepItemsWithID, func(i, j int) bool {
-				return parallelStepItemsWithID[i].ID < parallelStepItemsWithID[j].ID
+			sort.Slice(StepGroupItemsWithID, func(i, j int) bool {
+				return StepGroupItemsWithID[i].ID < StepGroupItemsWithID[j].ID
 			})
 
-			sortedParallelSteps := make([]*harness.Step, len(parallelStepItemsWithID))
-			for i, step := range parallelStepItemsWithID {
-				sortedParallelSteps[i] = step.Step
+			sortedStepGroup := make([]*harness.Step, len(StepGroupItemsWithID))
+			for i, step := range StepGroupItemsWithID {
+				sortedStepGroup[i] = step.Step
 			}
 
-			parallelStep := &harness.Step{
+			stepGroupStep := &harness.Step{
 				Name: currentNode.SpanName,
 				Id:   SanitizeForId(currentNode.SpanName, currentNode.SpanId),
 				Type: "group",
 				Spec: &harness.StepGroup{
-					Steps: sortedParallelSteps,
+					Steps: sortedStepGroup,
 				},
 				Failure: failureStrategy,
 			}
-			*stepWithIDList = append(*stepWithIDList, StepWithID{Step: parallelStep, ID: id})
+			*stepWithIDList = append(*stepWithIDList, StepWithID{Step: stepGroupStep, ID: id})
 		}
 
 		for _, child := range currentNode.Children {
