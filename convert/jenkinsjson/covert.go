@@ -474,6 +474,9 @@ func collectStepsWithID(currentNode jenkinsjson.Node, stepWithIDList *[]StepWith
 			*stepWithIDList = append(*stepWithIDList, StepWithID{Step: jenkinsjson.ConvertArtifactUploadJfrog(newNode, variables, timeout), ID: id})
 		}
 
+	case "anchore":
+		*stepWithIDList = append(*stepWithIDList, StepWithID{Step: jenkinsjson.ConvertAnchore(currentNode, variables), ID: id})
+
 	case "newBuildInfo", "getArtifactoryServer":
 		return nil, nil
 	case "":
