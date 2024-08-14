@@ -60,13 +60,26 @@ func ConvertAnchore(node Node, variables map[string]string) *harness.Step {
 		}
 
 		envs := map[string]string{
-			"ANCHORECTL_FAIL_BASED_ON_RESULTS": anchoreAttr.Delegate.Arguments.BailOnFail,
-			"ANCHORECTL_FORCE":                 strconv.FormatBool(anchoreAttr.Delegate.Arguments.ForceAnalyze),
-			"ANCHORE_FILE_NAME":                anchoreAttr.Delegate.Arguments.Name,
-			"ANCHORECTL_POLICY":                anchoreAttr.Delegate.Arguments.PolicyBundleId,
+			"ANCHORECTL_FAIL_BASED_ON_RESULTS":   anchoreAttr.Delegate.Arguments.BailOnFail,
+			"ANCHORECTL_FORCE":                   strconv.FormatBool(anchoreAttr.Delegate.Arguments.ForceAnalyze),
+			"ANCHORE_FILE_NAME":                  anchoreAttr.Delegate.Arguments.Name,
+			"ANCHORECTL_POLICY":                  anchoreAttr.Delegate.Arguments.PolicyBundleId,
+			"ANCHORECTL_ENGINECREDENTIALS":       anchoreAttr.Delegate.Arguments.EngineCredentialsId,
+			"ANCHORECTL_ENGINERETRIES":           anchoreAttr.Delegate.Arguments.EngineRetries,
+			"ANCHORECTL_URL":                     anchoreAttr.Delegate.Arguments.Engineurl,
+			"ANCHORECTL_ENGINEVERIFY":            strconv.FormatBool(anchoreAttr.Delegate.Arguments.Engineverify),
+			"ANCHORECTL_EXCLUDEFROMBASEIMAGE":    strconv.FormatBool(anchoreAttr.Delegate.Arguments.ExcludeFromBaseImage),
+			"ANCHORECTL_BAILONPLUGINFAIL":        strconv.FormatBool(anchoreAttr.Delegate.Arguments.BailOnPluginFail),
+			"ANCHORECTL_AUTOSUBSCRIBETAGUPDATES": strconv.FormatBool(anchoreAttr.Delegate.Arguments.AutoSubscribeTagUpdates),
+			"ANCHORECTL_ENGINEACCOUNT":           anchoreAttr.Delegate.Arguments.Engineaccount,
 		}
 
-		// Merge variables into envs
+		for k, v := range envs {
+			if v == "" {
+				delete(envs, k)
+			}
+		}
+
 		for k, v := range variables {
 			envs[k] = v
 		}
